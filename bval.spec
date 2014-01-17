@@ -20,7 +20,11 @@ BuildRequires: java-devel >= 0:1.7.0
 
 BuildRequires: apache-commons-beanutils
 BuildRequires: apache-commons-lang3
+%if 0%{?fedora}
 #BuildRequires: bean-validation-api provides incopatible JSR349 APIs
+%else
+BuildRequires: bean-validation-api
+%endif
 BuildRequires: freemarker
 BuildRequires: geronimo-parent-poms
 BuildRequires: geronimo-validation
