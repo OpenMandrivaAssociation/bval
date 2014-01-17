@@ -1,0 +1,15 @@
+--- bval-core/src/main/java/org/apache/bval/model/FeaturesCapable.java	2011-02-03 22:31:16.000000000 +0100
++++ bval-core/src/main/java/org/apache/bval/model/FeaturesCapable.java-gil	2012-03-05 18:32:58.807073393 +0100
+@@ -31,10 +31,10 @@
+ public abstract class FeaturesCapable implements Serializable {
+     private static final long serialVersionUID = -4045110242904814218L;
+ 
+-    private ConcurrentMap<String, Object> features = createFeaturesMap();
++    protected ConcurrentMap<String, Object> features = createFeaturesMap();
+ 
+     /** key = validation id, value = the validation */
+-    private Validation[] validations = new Validation[0];
++    protected Validation[] validations = new Validation[0];
+ 
+     private volatile boolean locking;
+     private ReentrantLock lock = new ReentrantLock(true);

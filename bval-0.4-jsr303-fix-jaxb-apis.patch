@@ -1,0 +1,62 @@
+diff -Nru bval-jsr303/src/main/java/org/apache/bval/jsr303/xml/ValidationMappingParser.java bval-jsr303/src/main/java/org/apache/bval/jsr303/xml-gil/ValidationMappingParser.java
+--- bval-jsr303/src/main/java/org/apache/bval/jsr303/xml/ValidationMappingParser.java	2012-04-09 22:00:34.000000000 +0200
++++ bval-jsr303/src/main/java/org/apache/bval/jsr303/xml-gil/ValidationMappingParser.java	2012-05-15 16:07:59.031881223 +0200
+@@ -311,8 +311,8 @@
+         }
+ 
+         List<Class<?>> groupList = new ArrayList<Class<?>>();
+-        for (JAXBElement<String> groupClass : groupsType.getValue()) {
+-            groupList.add(loadClass(groupClass.getValue(), defaultPackage));
++        for (String groupClass : groupsType.getValue()) {
++            groupList.add(loadClass(groupClass, defaultPackage));
+         }
+         return groupList.toArray(new Class[groupList.size()]);
+     }
+@@ -326,8 +326,8 @@
+         }
+ 
+         List<Class<? extends Payload>> payloadList = new ArrayList<Class<? extends Payload>>();
+-        for (JAXBElement<String> groupClass : payloadType.getValue()) {
+-            Class<?> payload = loadClass(groupClass.getValue(), defaultPackage);
++        for (String groupClass : payloadType.getValue()) {
++            Class<?> payload = loadClass(groupClass, defaultPackage);
+             if (!Payload.class.isAssignableFrom(payload)) {
+                 throw new ValidationException("Specified payload class " + payload.getName() +
+                       " does not implement javax.validation.Payload");
+@@ -343,8 +343,8 @@
+         if (groupSequenceType != null) {
+             Class<?>[] groupSequence = new Class<?>[groupSequenceType.getValue().size()];
+             int i=0;
+-            for (JAXBElement<String> groupName : groupSequenceType.getValue()) {
+-                Class<?> group = loadClass(groupName.getValue(), defaultPackage);
++            for (String groupName : groupSequenceType.getValue()) {
++                Class<?> group = loadClass(groupName, defaultPackage);
+                 groupSequence[i++] = group;
+             }
+             return groupSequence;
+@@ -459,10 +459,10 @@
+                  */
+                 classes.addAll(findConstraintValidatorClasses(annotationClass));
+             }
+-            for (JAXBElement<String> validatorClassName : validatedByType.getValue()) {
++            for (String validatorClassName : validatedByType.getValue()) {
+                 Class<? extends ConstraintValidator<?, ?>> validatorClass;
+                 validatorClass = (Class<? extends ConstraintValidator<?, ?>>)
+-                      loadClass(validatorClassName.getValue());
++                      loadClass(validatorClassName);
+ 
+ 
+                 if (!ConstraintValidator.class.isAssignableFrom(validatorClass)) {
+diff -Nru bval-jsr303/src/main/java/org/apache/bval/jsr303/xml/ValidationParser.java bval-jsr303/src/main/java/org/apache/bval/jsr303/xml-gil/ValidationParser.java
+--- bval-jsr303/src/main/java/org/apache/bval/jsr303/xml/ValidationParser.java	2012-04-09 22:00:34.000000000 +0200
++++ bval-jsr303/src/main/java/org/apache/bval/jsr303/xml-gil/ValidationParser.java	2012-05-15 15:55:41.502822371 +0200
+@@ -239,8 +239,7 @@
+ 
+     private void applyMappingStreams(ValidationConfigType xmlConfig,
+                                      ConfigurationImpl target) {
+-        for (JAXBElement<String> mappingFileNameElement : xmlConfig.getConstraintMapping()) {
+-            String mappingFileName = mappingFileNameElement.getValue();
++        for (String mappingFileName : xmlConfig.getConstraintMapping()) {
+             if (mappingFileName.startsWith("/")) {
+                 // Classloader needs a path without a starting /
+                 mappingFileName = mappingFileName.substring(1);
