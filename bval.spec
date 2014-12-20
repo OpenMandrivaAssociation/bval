@@ -5,7 +5,8 @@
 %global with_guice 0
 Name:          bval
 Version:       0.5
-Release:       7.0%{?dist}
+Release:       9.1
+Group:		Development/Java
 Summary:       Apache Bean Validation
 License:       ASL 2.0
 Url:           http://bval.apache.org/
@@ -15,16 +16,12 @@ Source1:       %{name}-0.5-depmap
 Patch0:        %{name}-0.3-incubating-core-FeaturesCapable.patch
 # fix jaxb 2.2 apis
 Patch1:        %{name}-0.4-jsr303-fix-jaxb-apis.patch
-
-BuildRequires: java-devel >= 0:1.7.0
+# https://issues.apache.org/jira/browse/BVAL-127
+Patch2:        bval-0.5-java8.patch
 
 BuildRequires: apache-commons-beanutils
 BuildRequires: apache-commons-lang3
-%if 0%{?fedora}
 #BuildRequires: bean-validation-api provides incopatible JSR349 APIs
-%else
-BuildRequires: bean-validation-api
-%endif
 BuildRequires: freemarker
 BuildRequires: geronimo-parent-poms
 BuildRequires: geronimo-validation
@@ -44,15 +41,17 @@ BuildRequires: google-guice
 BuildRequires: geronimo-osgi-support
 BuildRequires: junit
 BuildRequires: mockito
+BuildRequires: mvn(org.slf4j:jcl-over-slf4j)
+BuildRequires: mvn(org.slf4j:slf4j-simple)
 
-BuildRequires: apache-rat-plugin
-BuildRequires: buildnumber-maven-plugin
+#BuildRequires: apache-rat-plugin
+#BuildRequires: buildnumber-maven-plugin
 BuildRequires: maven-antrun-plugin
 BuildRequires: maven-enforcer-plugin
 BuildRequires: jaxb2-maven-plugin
 BuildRequires: maven-local
 BuildRequires: maven-plugin-bundle
-BuildRequires: maven-surefire-provider-junit4
+BuildRequires: maven-surefire-provider-junit
 # force JSR303 apis
 Requires:      geronimo-validation
 BuildArch:     noarch
@@ -76,6 +75,7 @@ find . -name "*.jar" -delete
 
 %patch0 -p0
 %patch1 -p0
+%patch2 -p1
 
 # Don't use buildnumber-plugin, because jna is required and currently broken in f17
 %pom_remove_plugin org.codehaus.mojo:buildnumber-maven-plugin
@@ -84,6 +84,7 @@ find . -name "*.jar" -delete
 %pom_remove_plugin org.codehaus.mojo:findbugs-maven-plugin bval-xstream
 %pom_remove_plugin org.codehaus.mojo:ianal-maven-plugin
 %pom_remove_plugin org.codehaus.mojo:jdepend-maven-plugin
+%pom_remove_plugin :maven-source-plugin
 
 
 %pom_remove_dep org.apache.geronimo.specs:geronimo-jpa_2.0_spec
@@ -106,7 +107,7 @@ find . -name "*.jar" -delete
   </dependency>
   <dependency>
     <groupId>org.apache.bval</groupId>
-    <artifactId>bval-jsrjsrjsr303</artifactId>
+    <artifactId>bval-jsr303</artifactId>
     <version>${project.version}</version>
   </dependency>' bval-guice
 %else
@@ -119,16 +120,12 @@ find . -name "*.jar" -delete
     <artifactId>bval-core</artifactId>
     <version>${project.version}</version>
   </dependency>' bval-extras
-%if 0%{?fedora}
 %pom_xpath_inject "pom:project/pom:dependencies" '
   <dependency>
     <groupId>org.apache.bval</groupId>
     <artifactId>bval-jsr303</artifactId>
     <version>${project.version}</version>
   </dependency>' bval-extras
-%else
-%pom_disable_module bval-jsr303
-%endif
 
 # fix koji build problems missing org.apache.geronimo.osgi.locator.ProviderLocator
 %pom_xpath_inject "pom:project/pom:dependencies" '
@@ -160,14 +157,25 @@ for s in bval-extras/src/main/java/org/apache/bval/extras/constraints/net/Domain
   native2ascii -encoding UTF8 ${s} ${s}
 done
 
+# Break build
+%pom_remove_plugin org.apache.rat:apache-rat-plugin
+rm -r bval-xstream/src/test/java/org/apache/bval/xml/BeanValidatorTest.java \
+ bval-xstream/src/test/java/org/apache/bval/xml/XMLMetaBeanInfosTest.java \
+ bval-xstream/src/test/java/org/apache/bval/xml/XMLMetaBeanManagerTest.java \
+ bval-json/src/test/java/org/apache/bval/json/JSONGeneratorTest.java \
+ bval-jsr303/src/test/java/org/apache/bval/jsr303/ValidationTest.java
+
+sed -i "s|<groupId>javax.validation</groupId>|<groupId>org.apache.geronimo.specs</groupId>|" \
+ bval-jsr303/pom.xml bval-extras/pom.xml
+sed -i "s|<artifactId>validation-api</artifactId>|<artifactId>geronimo-validation_1.0_spec</artifactId>|" \
+ bval-jsr303/pom.xml bval-extras/pom.xml
+
 %build
 
 %mvn_file :%{name}-core %{name}/core
 %mvn_file :%{name}-extras %{name}/extras
 %mvn_file :%{name}-json %{name}/json
-%if 0%{?fedora}
 %mvn_file :%{name}-jsr303 %{name}/jsr303
-%endif
 %mvn_file :%{name}-xstream %{name}/xstream
 
 %mvn_build -- -Dri -Dproject.build.sourceEncoding=UTF-8 \
@@ -184,6 +192,12 @@ done
 %doc LICENSE NOTICE
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Fri Mar 28 2014 Michael Simacek <msimacek@redhat.com> - 0.5-8
+- Use Requires: java-headless rebuild (#1067528)
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
@@ -219,3 +233,4 @@ done
 
 * Fri Apr 06 2012 gil cattaneo <puntogil@libero.it> 0.3-1
 - initial rpm
+

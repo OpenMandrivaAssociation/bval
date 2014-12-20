@@ -1,0 +1,56 @@
+diff -Nru bval-parent-0.5/bval-jsr303/src/main/java/org/apache/bval/jsr303/ConstraintValidation.java bval-parent-0.5-gil/bval-jsr303/src/main/java/org/apache/bval/jsr303/ConstraintValidation.java
+--- bval-parent-0.5/bval-jsr303/src/main/java/org/apache/bval/jsr303/ConstraintValidation.java	2012-09-18 08:30:14.000000000 +0200
++++ bval-parent-0.5-gil/bval-jsr303/src/main/java/org/apache/bval/jsr303/ConstraintValidation.java	2014-06-11 19:02:11.000000000 +0200
+@@ -138,7 +138,7 @@
+      * {@inheritDoc}
+      */
+     public <L extends ValidationListener> void validate(ValidationContext<L> context) {
+-        validate((GroupValidationContext<?>) context);
++        validateGroupContext((GroupValidationContext<?>) context);
+     }
+ 
+     /**
+@@ -147,7 +147,7 @@
+      * @param context
+      *            root
+      */
+-    public void validate(GroupValidationContext<?> context) {
++    public void validateGroupContext(GroupValidationContext<?> context) {
+         context.setConstraintValidation(this);
+         /**
+          * execute unless the given validation constraint has already been
+diff -Nru bval-parent-0.5/bval-jsr303/src/main/java/org/apache/bval/jsr303/extensions/MethodValidatorImpl.java bval-parent-0.5-gil/bval-jsr303/src/main/java/org/apache/bval/jsr303/extensions/MethodValidatorImpl.java
+--- bval-parent-0.5/bval-jsr303/src/main/java/org/apache/bval/jsr303/extensions/MethodValidatorImpl.java	2012-09-18 08:30:14.000000000 +0200
++++ bval-parent-0.5-gil/bval-jsr303/src/main/java/org/apache/bval/jsr303/extensions/MethodValidatorImpl.java	2014-06-11 19:07:14.000000000 +0200
+@@ -206,13 +206,13 @@
+             // 1. process groups
+             for (Group current : groups.getGroups()) {
+                 context.setCurrentGroup(current);
+-                validation.validate(context);
++                validation.validateGroupContext(context);
+             }
+             // 2. process sequences
+             for (List<Group> eachSeq : groups.getSequences()) {
+                 for (Group current : eachSeq) {
+                     context.setCurrentGroup(current);
+-                    validation.validate(context);
++                    validation.validateGroupContext(context);
+                     /**
+                      * if one of the group process in the sequence leads to one
+                      * or more validation failure, the groups following in the
+@@ -263,13 +263,13 @@
+             // 1. process groups
+             for (Group current : groups.getGroups()) {
+                 context.setCurrentGroup(current);
+-                validation.validate(context);
++                validation.validateGroupContext(context);
+             }
+             // 2. process sequences
+             for (List<Group> eachSeq : groups.getSequences()) {
+                 for (Group current : eachSeq) {
+                     context.setCurrentGroup(current);
+-                    validation.validate(context);
++                    validation.validateGroupContext(context);
+                     /**
+                      * if one of the group process in the sequence leads to one
+                      * or more validation failure, the groups following in the
