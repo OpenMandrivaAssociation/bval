@@ -5,7 +5,7 @@
 %global with_guice 0
 Name:          bval
 Version:       0.5
-Release:       9.1
+Release:       9.2
 Group:		Development/Java
 Summary:       Apache Bean Validation
 License:       ASL 2.0
