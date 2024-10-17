@@ -9,7 +9,7 @@ Release:       9.3
 Group:		Development/Java
 Summary:       Apache Bean Validation
 License:       ASL 2.0
-Url:           http://bval.apache.org/
+Url:           https://bval.apache.org/
 Source0:       http://www.apache.org/dist/%{name}/%{namedversion}/%{name}-parent-%{namedversion}-source-release.zip
 # add JSR303 full support
 Source1:       %{name}-0.5-depmap
